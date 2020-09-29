@@ -16,7 +16,7 @@ it('should log pickup', () => {
   emitter.emit('pickup', delivery);
 
   
-  expect(console.log).toHaveBeenLastCalledWith("EVENT",
+  expect(console.log).toHaveBeenLastCalledWith('EVENT',
     expect.objectContaining({event:'pickup'}));
 
 });
@@ -27,7 +27,7 @@ it('should log in-transit', () => {
 
   emitter.emit('in-transit', delivery);
 
-  expect(console.log).toHaveBeenLastCalledWith("EVENT", expect.objectContaining({event:'in-transit'}));
+  expect(console.log).toHaveBeenLastCalledWith('EVENT', expect.objectContaining({event:'in-transit'}));
 
 });
 
@@ -37,6 +37,6 @@ it('should log delivered', () => {
 
   emitter.emit('delivered', delivery);
 
-  expect(console.log).toHaveBeenLastCalledWith("EVENT", expect.objectContaining({event:'delivered'}));
+  expect(console.log).toHaveBeenLastCalledWith('EVENT', expect.objectContaining({event:'delivered'}));
 
 });
