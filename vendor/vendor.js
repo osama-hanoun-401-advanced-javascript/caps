@@ -1,60 +1,51 @@
 'use strict';
+var faker = require('faker');
+const io = require('socket.io-client');
+const inquirer = require('inquirer');
+const caps = io.connect('http://localhost:3000/caps');
 
-const net = require('net');
-const socket = net.Socket();
-const faker = require('faker');
+async function getName() {
+  console.clear();
+  const input = await inquirer.prompt([{
+    name: 'name', message: 'What is your shop name? '
+  }]);
+  return input.name;
+}
 
-const client = new net.Socket();
 
-//Connect to the CAPS server
-const host = 'localhost';
-const port = 4000;
+caps.on('connect', async () => {
 
-client.connect(port, host, () => {
-  console.log(`Connected to ${host} : ${port}`);
+  let name = await getName();
+
+  // caps.emit('join', name);
+  caps.emit('join', 'general');
+
+  caps.on('message', data => {
+    if (data.action === 'delivered') {
+      console.log(
+        `Thank you for delivering ${data.payload.orderID}`
+      )
+      caps.emit('message', {action : 'thanks', payload:data.payload })
+    } else if (data.action === 'in-transit'){
+      console.log(
+        `in-transit ${data.payload.orderID}`
+      )
+    }
+  });
+
+   getInput();
+  async function getInput() {
+    let order = await {
+      time: faker.date.recent(),
+      store: name,
+      orderID: faker.random.number(),
+      customer: `${faker.name.firstName()},${faker.name.lastName()}`,
+      address: `${faker.address.streetAddress()},${faker.address.city()},${faker.address.stateAbbr()}`,
+    };
+     caps.emit('message',{payload:order,action:'pickup'});
+
+    setInterval(async() => {
+        getInput();
+    }, 3000);
+  }
 });
-
-
-//Every 5 seconds, simulate a new customer order
-// let storeName = '1-206-flowers';
-setInterval(() => {
-//Create an order object with your store name, order id, customer name, address
-//HINT: Have some fun by using the faker library to make up phony information
-
-  const order = {
-    time: faker.date.recent(),
-    store: process.env.STORE_NAME,
-    orderID: faker.random.number(),
-    customer: `${faker.name.firstName()},${faker.name.lastName()}`,
-    address: `${faker.address.streetAddress()},${faker.address.city()},${faker.address.stateAbbr()}`,
-  };
-
-  //Create a message object with the following keys:
-  //event - ‘pickup’
-  //payload - the order object you created in the above step
-  let event = (JSON.stringify({ event: 'pickup', payload: order }));
-  //Write that message (as a string) to the CAPS server
-  client.write(event);
-
-}, 5000);
-
-//Listen for the data event coming in from the CAPS server
-//When data arrives, parse it (it should be JSON) and look for the event property
-client.on('data', function (data) {
-  let jsonPayload = JSON.parse(data);
-  //Whenever the ‘delivered’ event occurs
-  //Log “thank you” to the console
-  if (jsonPayload.event === 'delivered') {
-    console.log(
-      `Thank you for delivering ${jsonPayload.payload.orderID}`
-    )
-    //Ignore any data that specifies a different event
-  };
-})
-
-socket.on('data', (payload) => {
-  let stringPayload = Buffer.from(payload).toString();
-  const jsonPayload = JSON.parse(stringPayload);
-})
-
-// }

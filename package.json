@@ -22,7 +22,8 @@
     "faker": "^5.1.0",
     "jest": "^26.4.2",
     "node": "^14.8.0",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "socket.io": "^2.3.0"
   },
   "directories": {
     "lib": "lib"
